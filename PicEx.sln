@@ -3,15 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PicEx", "PicEx\PicEx.csproj", "{F1121D1D-40C6-4C63-87C1-500F6A2724C9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PicEx.Pdf", "PicEx.Pdf\PicEx.Pdf.csproj", "{E06B421B-4069-4D28-AED3-05DF3A71FAE7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PicEx.Word", "PicEx.Word\PicEx.Word.csproj", "{94E8EAB2-812B-4226-A603-DF3EDC8A28A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PicEx.Office", "PicEx.Execl\PicEx.Office.csproj", "{6D5413E3-8945-4DBB-9726-4368A725A99A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PicEx.Execl", "PicEx.Execl\PicEx.Execl.csproj", "{6D5413E3-8945-4DBB-9726-4368A725A99A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PicEx.win", "PicEx.win\PicEx.win.csproj", "{85E37D4C-0301-4B17-9614-F5AE122B6F96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PicEx.win", "PicEx.win\PicEx.win.csproj", "{85E37D4C-0301-4B17-9614-F5AE122B6F96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,18 +15,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F1121D1D-40C6-4C63-87C1-500F6A2724C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1121D1D-40C6-4C63-87C1-500F6A2724C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1121D1D-40C6-4C63-87C1-500F6A2724C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1121D1D-40C6-4C63-87C1-500F6A2724C9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E06B421B-4069-4D28-AED3-05DF3A71FAE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E06B421B-4069-4D28-AED3-05DF3A71FAE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E06B421B-4069-4D28-AED3-05DF3A71FAE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06B421B-4069-4D28-AED3-05DF3A71FAE7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{94E8EAB2-812B-4226-A603-DF3EDC8A28A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{94E8EAB2-812B-4226-A603-DF3EDC8A28A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{94E8EAB2-812B-4226-A603-DF3EDC8A28A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{94E8EAB2-812B-4226-A603-DF3EDC8A28A2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6D5413E3-8945-4DBB-9726-4368A725A99A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6D5413E3-8945-4DBB-9726-4368A725A99A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D5413E3-8945-4DBB-9726-4368A725A99A}.Release|Any CPU.ActiveCfg = Release|Any CPU

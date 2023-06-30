@@ -1,6 +1,6 @@
-using PicEx.Execl;
+using PicEx.Office;
 using PicEx.Pdf;
-using PicEx.Word;
+
 
 namespace PicEx.win
 {
@@ -28,7 +28,7 @@ namespace PicEx.win
             // 设置文件对话框的初始目录
             openFileDialog.InitialDirectory = defaultOpenLocation;
             // 设置文件对话框的文件类型
-            openFileDialog.Filter = "所有文件(*.*)|*.*|pdf文件(*.pdf)|*.pdf|word文件(*.docx)|*.docx|excel文件(*.xlsx)|*.xlsx";
+            openFileDialog.Filter = "所有文件(*.*)|*.*|pdf文件(*.pdf)|*.pdf|word文件(*.docx)|*.docx|excel文件(*.xlsx)|*.xlsx|ppt文件(*.pptx)|*.pptx";
             // 设置文件对话框的默认文件类型
             openFileDialog.FilterIndex = 0;
             // 设置对话框是否记忆之前打开的目录
@@ -87,11 +87,15 @@ namespace PicEx.win
                         MessageBox.Show("提取成功");
                         break;
                     case ".docx":
-                        WordImageExtractor.ExtractImagesFromWord(filePath, outputDirectory);
+                        ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDirectory,"word");
                         MessageBox.Show("提取成功");
                         break;
                     case ".xlsx":
-                        ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDirectory);
+                        ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDirectory,"xl");
+                        MessageBox.Show("提取成功");
+                        break;
+                    case ".pptx":
+                        ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDirectory, "ppt");
                         MessageBox.Show("提取成功");
                         break;
                     default:

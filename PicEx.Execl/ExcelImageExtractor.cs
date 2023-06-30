@@ -1,13 +1,10 @@
-﻿using DocumentFormat.OpenXml.Drawing.Spreadsheet;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Spreadsheet;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 
-namespace PicEx.Execl
+namespace PicEx.Office
 {
     public class ExcelImageExtractor
     {
-        public static void ExtractImagesFromExcel(string excelFilePath, string outputFolderPath)
+        public static void ExtractImagesFromExcel(string excelFilePath, string outputFolderPath,string type)
         {
             string tempFolderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
@@ -26,7 +23,7 @@ namespace PicEx.Execl
             ZipFile.ExtractToDirectory(tempRarFilePath, tempFolderPath);
 
             // 获取包含图片的文件夹路径
-            string imagesFolderPath = Path.Combine(tempFolderPath, "xl","media");
+            string imagesFolderPath = Path.Combine(tempFolderPath, type, "media");
 
             if (Directory.Exists(imagesFolderPath))
             {

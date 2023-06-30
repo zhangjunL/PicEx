@@ -9,9 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PicEx.Execl\PicEx.Execl.csproj" />
+    <ProjectReference Include="..\PicEx.Execl\PicEx.Office.csproj" />
     <ProjectReference Include="..\PicEx.Pdf\PicEx.Pdf.csproj" />
-    <ProjectReference Include="..\PicEx.Word\PicEx.Word.csproj" />
   </ItemGroup>
 
 </Project>
