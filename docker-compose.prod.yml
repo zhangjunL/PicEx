@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  picex:
+    image: ghcr.io/${GITHUB_REPOSITORY:-yourusername/picex}:${TAG:-latest}
+    volumes:
+      - ./input:/input
+      - ./output:/output
+    environment:
+      - DOTNET_CLI_TELEMETRY_OPTOUT=true
+      - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - picex-network
+    # 默认命令,可以在运行时覆盖
+    command: /input /output
+
+networks:
+  picex-network:
+    driver: bridge 

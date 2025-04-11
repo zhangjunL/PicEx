@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  picex-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    volumes:
+      - .:/app
+      - /app/PicEx.Console/bin
+      - /app/PicEx.Console/obj
+    working_dir: /app
+    environment:
+      - DOTNET_CLI_TELEMETRY_OPTOUT=true
+      - ASPNETCORE_ENVIRONMENT=Development
+    command: tail -f /dev/null  # 保持容器运行
+    networks:
+      - picex-network
+
+networks:
+  picex-network:
+    driver: bridge 
