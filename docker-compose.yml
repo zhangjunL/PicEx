@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  picex:
+    # 阿里云镜像
+    image: registry.cn-hangzhou.aliyuncs.com/zjsck/picex:latest
+    # 如果需要使用本地镜像，取消下面一行注释
+    # image: picex:latest
+
+    container_name: picex
+    restart: unless-stopped
+
+    # 以 root 用户运行，避免 NAS 挂载目录权限问题
+    user: root
+
+    # 挂载输入输出目录
+    volumes:
+      - ./input:/input
+      - ./output:/output
+
+    # 轮询模式：每 30 秒扫描一次目录（可在绿联云 NAS 上正常工作）
+    # 格式: /input /output 轮询间隔秒数
+    # 例如: /input /output 30 表示每 30 秒扫描一次
+    command: ["/input", "/output", "30"]
+
+    environment:
+      - DOTNET_CLI_TELEMETRY_OPTOUT=true
+
+    # 可选：限制资源使用
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 1G
+    #     reservations:
+    #       memory: 512M

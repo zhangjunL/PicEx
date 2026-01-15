@@ -1,86 +1,167 @@
 ﻿using PicEx.Console.Extractors;
-using PicEx.Console.Services;
 using PicEx.Console.Utils;
 
 namespace PicEx.Console;
 
 class Program
 {
+    private static string _inputDirectory = "";
+    private static string _outputDirectory = "";
+    private static Dictionary<string, DateTime> _processedFiles = new();
+    private static bool _isRunning = true;
+
     static void Main(string[] args)
     {
         if (args.Length < 2)
         {
-            System.Console.WriteLine("用法: PicEx.Console <输入目录> <输出目录>");
+            System.Console.WriteLine("用法: PicEx.Console <输入目录> <输出目录> [轮询间隔秒数]");
+            System.Console.WriteLine("示例: PicEx.Console /input /output 30");
             return;
         }
 
-        string inputDirectory = args[0];
-        string outputDirectory = args[1];
+        _inputDirectory = args[0];
+        _outputDirectory = args[1];
 
-        if (!Directory.Exists(inputDirectory))
+        // 轮询间隔（秒），默认 30 秒
+        int pollInterval = args.Length > 2 && int.TryParse(args[2], out int interval) ? interval : 30;
+
+        if (!Directory.Exists(_inputDirectory))
         {
-            System.Console.WriteLine($"输入目录不存在: {inputDirectory}");
+            System.Console.WriteLine($"输入目录不存在: {_inputDirectory}");
             return;
         }
 
-        Directory.CreateDirectory(outputDirectory);
+        Directory.CreateDirectory(_outputDirectory);
 
-        var watcher = new FileWatcherService(inputDirectory, outputDirectory);
-        watcher.Start();
+        System.Console.WriteLine($"=========================================");
+        System.Console.WriteLine($"PicEx 图片提取工具 - 轮询模式");
+        System.Console.WriteLine($"=========================================");
+        System.Console.WriteLine($"输入目录: {_inputDirectory}");
+        System.Console.WriteLine($"输出目录: {_outputDirectory}");
+        System.Console.WriteLine($"轮询间隔: {pollInterval} 秒");
+        System.Console.WriteLine($"支持的文件类型: PDF, Word, Excel, PowerPoint, ZIP");
+        System.Console.WriteLine($"按 Ctrl+C 停止");
+        System.Console.WriteLine($"=========================================");
 
+        // 启动时先扫描一次
+        System.Console.WriteLine($"开始首次扫描...");
+        ScanAndProcessFiles();
+
+        // 设置取消按键
         System.Console.CancelKeyPress += (sender, e) =>
         {
             e.Cancel = true;
-            watcher.Stop();
-            System.Console.WriteLine("正在停止监视...");
+            _isRunning = false;
+            System.Console.WriteLine("\n正在停止...");
             Environment.Exit(0);
         };
 
-        // 保持程序运行
-        while (true)
+        // 定时轮询
+        while (_isRunning)
         {
-            Thread.Sleep(1000);
+            Thread.Sleep(pollInterval * 1000);
+            if (_isRunning)
+            {
+                ScanAndProcessFiles();
+            }
         }
     }
 
-    static void ProcessSingleFile(string filePath, string outputDir)
+    static void ScanAndProcessFiles()
     {
-        string fileType = Path.GetExtension(filePath).ToLower();
-
-        switch (fileType)
+        try
         {
-            case ".pdf":
-                PdfImageExtractor.ExtractImagesFromPdf(filePath, outputDir);
-                break;
-            case ".xlsx":
-                ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDir, "xl");
-                break;
-            case ".docx":
-                ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDir, "word");
-                break;
-            case ".pptx":
-                ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDir, "ppt");
-                break;
-            case ".zip":
-                ArchiveImageExtractor.ExtractImagesFromArchive(filePath, outputDir);
-                break;
-            default:
-                System.Console.WriteLine($"不支持的文件类型: {fileType}");
-                ShowHelp();
-                break;
+            var files = Directory.GetFiles(_inputDirectory, "*.*", SearchOption.AllDirectories);
+            int processedCount = 0;
+
+            foreach (var file in files)
+            {
+                var fileInfo = new FileInfo(file);
+
+                if (!IsSupportedFileType(fileInfo.Extension))
+                {
+                    continue;
+                }
+
+                // 检查文件是否已处理且未修改
+                if (_processedFiles.TryGetValue(file, out DateTime lastProcessed))
+                {
+                    if (fileInfo.LastWriteTime <= lastProcessed)
+                    {
+                        continue; // 文件未修改，跳过
+                    }
+                }
+
+                // 处理文件
+                ProcessFile(file);
+                _processedFiles[file] = fileInfo.LastWriteTime;
+                processedCount++;
+            }
+
+            if (processedCount > 0)
+            {
+                System.Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] 已处理 {processedCount} 个文件");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine($"扫描目录时出错: {ex.Message}");
         }
     }
 
-    static void ShowHelp()
+    static void ProcessFile(string filePath)
     {
-        System.Console.WriteLine("使用方法:");
-        System.Console.WriteLine("  单文件处理: PicEx.Console <文件路径> <输出目录>");
-        System.Console.WriteLine("  监控模式: PicEx.Console <输入目录> <输出目录> --watch");
-        System.Console.WriteLine("\n支持的文件类型:");
-        System.Console.WriteLine("  - PDF文件 (.pdf)");
-        System.Console.WriteLine("  - Excel文件 (.xlsx)");
-        System.Console.WriteLine("  - Word文件 (.docx)");
-        System.Console.WriteLine("  - PowerPoint文件 (.pptx)");
-        System.Console.WriteLine("  - 压缩文件 (.zip)");
+        try
+        {
+            var fileInfo = new FileInfo(filePath);
+            var relativePath = Path.GetRelativePath(_inputDirectory, fileInfo.DirectoryName!);
+            var outputDir = Path.Combine(_outputDirectory, relativePath);
+            Directory.CreateDirectory(outputDir);
+
+            var outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(fileInfo.Name));
+            System.Console.WriteLine($"正在处理: {Path.GetFileName(filePath)}");
+
+            switch (fileInfo.Extension.ToLower())
+            {
+                case ".pdf":
+                case ".ai":  // AI 文件本质是 PDF，使用 PDF 提取器
+                    PdfImageExtractor.ExtractImagesFromPdf(filePath, outputDir);
+                    break;
+                case ".psd":  // Adobe Photoshop 文件
+                    PsdImageExtractor.ExtractImagesFromPsd(filePath, outputDir);
+                    break;
+                case ".docx":
+                case ".doc":
+                    ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDir, "word");
+                    break;
+                case ".xlsx":
+                case ".xls":
+                    ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDir, "xl");
+                    break;
+                case ".pptx":
+                case ".ppt":
+                    ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDir, "ppt");
+                    break;
+                case ".zip":
+                    ArchiveImageExtractor.ExtractImagesFromArchive(filePath, outputDir);
+                    break;
+            }
+
+            System.Console.WriteLine($"处理完成: {Path.GetFileName(filePath)}");
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine($"处理文件时出错 {Path.GetFileName(filePath)}: {ex.Message}");
+        }
+    }
+
+    static bool IsSupportedFileType(string extension)
+    {
+        return extension.ToLower() switch
+        {
+            ".pdf" or ".docx" or ".doc" or ".xlsx" or ".xls" or ".pptx" or ".ppt" or ".zip"
+            or ".ai" or ".psd" => true,  // 新增 AI 和 PSD 支持
+            _ => false
+        };
     }
 }

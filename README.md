@@ -1,194 +1,244 @@
-# PicEx 图片导出工具
+# PicEx 图片提取工具
 
-PicEx 是一个强大的文档图片提取工具,可以从各种文档格式中提取图片。它支持监控模式,可以自动处理指定目录中的文件。
+PicEx 是一个强大的文档图片提取工具，可以从各种文档格式中自动提取图片。支持轮询扫描模式，特别适合在 NAS 等环境中运行。
 
-## 功能特点
+## ✨ 功能特点
 
-- 支持多种文档格式:
+- **支持多种文档格式：**
   - PDF 文件 (.pdf)
   - Word 文档 (.doc, .docx)
   - Excel 表格 (.xls, .xlsx)
   - PowerPoint 演示文稿 (.ppt, .pptx)
   - ZIP 压缩包 (.zip)
-- 支持子文件夹处理
-- 支持文件监控模式
-- 支持单文件处理模式
-- 自动创建输出目录结构
-- 防止重复处理同一文件
-- 文件锁定检测
+  - Adobe Illustrator 文件 (.ai) - 使用 PDF 兼容层
+  - Adobe Photoshop 文件 (.psd) - 使用 ImageMagick 提取图层
 
-## 系统要求
+- **智能文件处理：**
+  - 🔄 **轮询模式** - 定时扫描目录（默认 30 秒），不依赖文件系统事件
+  - 📁 支持子文件夹处理
+  - 🔒 文件锁定检测，避免处理正在写入的文件
+  - ⏭️ 智能去重，不重复处理未修改的文件
+  - 📂 自动创建输出目录结构
 
-- Docker
+- **容器化部署：**
+  - 🐳 Docker 支持
+  - 📦 Docker Compose 一键部署
+  - 🚀 绿联云等 NAS 设备完美支持
+
+## 📦 系统要求
+
+- Docker 或 Docker Compose
 - 至少 1GB 可用内存
 - 至少 1GB 可用磁盘空间
 
-## 安装说明
+## 🚀 快速开始
 
-### 1. 使用 Docker 镜像
+### 使用 Docker 镜像（推荐）
 
-从 GitHub Container Registry 拉取镜像:
-
+**阿里云镜像（国内推荐）：**
 ```bash
-docker pull ghcr.io/yourusername/picex:latest
+docker pull registry.cn-hangzhou.aliyuncs.com/zjsck/picex:latest
 ```
 
-### 2. 从源码构建
-
-1. 克隆仓库:
+**使用 docker-compose：**
 ```bash
-git clone https://github.com/yourusername/PicEx.git
-cd PicEx
-```
+# 创建目录
+mkdir -p input output
 
-2. 构建 Docker 镜像:
-```bash
-./build.sh
-```
-
-## 使用方法
-
-### 1. 监控模式
-
-监控指定目录,自动处理新文件:
-
-```bash
-docker run -v <输入目录>:/input -v <输出目录>:/output picex /input /output
-```
-
-示例:
-```bash
-# 监控 input 目录,输出到 output 目录
-docker run -v ./input:/input -v ./output:/output picex /input /output
-```
-
-### 2. 单文件处理模式
-
-处理单个文件:
-
-```bash
-docker run -v <输入文件目录>:/input -v <输出目录>:/output picex /input/文件名 /output
-```
-
-示例:
-```bash
-# 处理单个 PDF 文件
-docker run -v ./input:/input -v ./output:/output picex /input/document.pdf /output
-```
-
-### 3. 使用 Docker Compose
-
-也可以使用 Docker Compose 来运行:
-
-```bash
-# 启动服务
-docker-compose up
-
-# 在后台运行
+# 启动服务（轮询模式，每 30 秒扫描一次）
 docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
 ```
 
-## 开发环境
+**直接运行：**
+```bash
+# 轮询模式（推荐）：每 30 秒扫描一次目录
+docker run -d \
+  --name picex \
+  --user root \
+  -v $(pwd)/input:/input \
+  -v $(pwd)/output:/output \
+  registry.cn-hangzhou.aliyuncs.com/zjsck/picex:latest /input /output 30
 
-### 1. 使用 Docker Compose 开发
+# 查看日志
+docker logs -f picex
+```
 
-项目提供了开发环境的 Docker Compose 配置:
+### 自定义轮询间隔
+
+修改 `docker-compose.yml` 中的 `command` 参数：
+
+```yaml
+command: ["/input", "/output", "60"]  # 改为 60 秒
+```
+
+或在命令行中指定：
 
 ```bash
-# 启动开发环境
-docker-compose up
-
-# 在容器中运行命令
-docker-compose exec picex-dev dotnet build
-docker-compose exec picex-dev dotnet test
+docker run ... picex /input /output 60  # 60 秒轮询间隔
 ```
 
-开发环境配置:
-- 源代码目录挂载到容器的 /app 目录
-- 禁用 .NET CLI 遥测
-- 使用 .NET 8.0 SDK 镜像
+### 从源码构建
 
-### 2. 本地开发
+```bash
+# 克隆仓库
+git clone https://github.com/zhangjunL/PicEx.git
+cd PicEx
 
-也可以直接在本地开发:
+# 构建镜像
+./build.sh
 
-1. 安装 .NET 8.0 SDK
-2. 克隆仓库
-3. 使用 Visual Studio 或 VS Code 打开解决方案
-4. 运行 `dotnet restore` 还原包
-5. 运行 `dotnet build` 构建项目
-6. 运行 `dotnet test` 运行测试
+# 或使用 docker-compose
+docker-compose build
+```
 
-## CI/CD
+## 📖 使用说明
 
-项目使用 GitHub Actions 进行持续集成和部署:
+### 工作模式
 
-1. 自动构建 Docker 镜像
-2. 推送到 GitHub Container Registry
-3. 支持以下触发条件:
-   - 推送到 main/master 分支
-   - 创建版本标签 (v*.*.*)
-   - 创建 Pull Request
-   - 手动触发
+PicEx 使用**轮询扫描模式**：
 
-镜像标签规则:
-- 分支名称 (例如: main, master)
-- 版本号 (例如: v1.0.0)
-- 主版本号.次版本号 (例如: v1.0)
-- Git commit SHA (短格式)
+1. 🔄 定时扫描输入目录（默认 30 秒）
+2. 🔍 检测新文件或修改的文件
+3. 📄 根据文件类型提取图片
+4. 💾 保存到输出目录，保持原有目录结构
 
-## 目录结构
+### 支持的格式
+
+| 格式 | 扩展名 | 提取方式 |
+|------|--------|----------|
+| PDF | `.pdf` | 逐页提取嵌入图片 |
+| Word | `.docx`, `.doc` | 提取嵌入媒体资源 |
+| Excel | `.xlsx`, `.xls` | 提取嵌入图片 |
+| PowerPoint | `.pptx`, `.ppt` | 提取嵌入媒体 |
+| ZIP | `.zip` | 递归提取压缩包图片 |
+| Adobe Illustrator | `.ai` | PDF 兼容层提取 |
+| Adobe Photoshop | `.psd` | 图层提取（ImageMagick） |
+
+### 输出结构
+
+```
+output/
+├── document.pdf/
+│   ├── image_page1_1.png
+│   ├── image_page2_1.png
+│   └── ...
+├── design.psd/
+│   ├── layer_1.png
+│   ├── layer_2.png
+│   └── ...
+└── logo.ai/
+    └── image_page1_1.png
+```
+
+## 🛠️ 技术栈
+
+- **.NET 8.0** - 主开发框架
+- **iText7** - PDF 处理
+- **DocumentFormat.OpenXml** - Office 文档处理
+- **ImageMagick** - PSD 图层提取
+- **Docker** - 容器化部署
+
+## 📁 项目结构
 
 ```
 PicEx/
-├── input/              # 输入目录
-├── output/            # 输出目录
-├── PicEx.Console/     # 主程序
-│   ├── Extractors/   # 图片提取器
-│   ├── Services/     # 服务
-│   └── Utils/        # 工具类
-├── PicEx.win/        # Windows 平台特定代码
-├── PicEx.Excel/      # Excel 处理相关代码
-├── PicEx.Pdf/        # PDF 处理相关代码
-├── Dockerfile         # Docker 配置
-├── docker-compose.yml # Docker Compose 配置
-├── build.sh          # 构建脚本
-└── README.md         # 说明文档
+├── PicEx.Console/          # 主程序
+│   ├── Extractors/        # 图片提取器
+│   │   ├── PdfImageExtractor.cs
+│   │   ├── ExcelImageExtractor.cs
+│   │   ├── ArchiveImageExtractor.cs
+│   │   ├── AiImageExtractor.cs
+│   │   └── PsdImageExtractor.cs
+│   ├── Services/          # 服务
+│   │   └── FileWatcherService.cs
+│   ├── Utils/             # 工具类
+│   │   └── PathUtils.cs
+│   └── Program.cs         # 入口程序
+├── Dockerfile             # Docker 配置
+├── docker-compose.yml     # Docker Compose 配置
+├── build.sh               # 构建脚本
+├── push-aliyun.sh         # 阿里云推送脚本
+└── README.md
 ```
 
-## 输出说明
+## 🔧 配置说明
 
-- 提取的图片将保存在输出目录中
-- 输出目录会保持与输入目录相同的结构
-- 图片文件名格式: `原文件名_序号.扩展名`
-- 支持的图片格式: PNG, JPEG, GIF, BMP
+### docker-compose.yml
 
-## 注意事项
+```yaml
+services:
+  picex:
+    image: registry.cn-hangzhou.aliyuncs.com/zjsck/picex:latest
+    container_name: picex
+    restart: unless-stopped
+    user: root  # NAS 环境需要 root 权限
+    volumes:
+      - ./input:/input
+      - ./output:/output
+    command: ["/input", "/output", "30"]  # 30 秒轮询间隔
+```
 
-1. 确保输入目录和输出目录有足够的读写权限
-2. 大文件处理可能需要较长时间
-3. 建议定期清理输出目录
-4. 程序会自动跳过不支持的文件类型
-5. Windows 平台可能需要额外的配置
+### 环境变量
 
-## 开发说明
+- `DOTNET_CLI_TELEMETRY_OPTOUT=true` - 禁用 .NET 遥测
 
-- 使用 .NET 8.0 开发
-- 主要依赖:
-  - iText7 (PDF 处理)
-  - DocumentFormat.OpenXml (Office 文档处理)
-  - System.IO.Compression (ZIP 处理)
-- 项目结构:
-  - PicEx.Console: 主程序
-  - PicEx.win: Windows 平台特定功能
-  - PicEx.Excel: Excel 文件处理
-  - PicEx.Pdf: PDF 文件处理
+## 💡 使用场景
 
-## 贡献指南
+### 绿联云 NAS 部署
 
-欢迎提交 Issue 和 Pull Request 来帮助改进这个项目。
+1. 通过绿联云 Docker 管理界面部署
+2. 挂载 `input` 和 `output` 目录
+3. 设置自动重启
+4. 复制文件到 `input` 目录即可自动处理
 
-## 许可证
+### 批量处理文档
+
+```bash
+# 复制所有 PDF 到 input 目录
+cp ~/Documents/*.pdf ./input/
+
+# 等待最多 30 秒（轮询间隔）
+sleep 30
+
+# 查看输出
+ls -R ./output/
+```
+
+### 定时任务
+
+配合 cron 或 NAS 定时任务，定期运行容器处理文件：
+
+```bash
+# 每天凌晨 2 点运行
+0 2 * * * cd /path/to/PicEx && docker-compose up -d && sleep 3600 && docker-compose down
+```
+
+## ⚠️ 注意事项
+
+1. **文件权限**：确保 Docker 容器有读写权限
+   - NAS 环境建议使用 `user: root`
+   - 或设置 output 目录权限为 777
+
+2. **轮询间隔**：根据需求调整
+   - 10-30 秒：快速响应，稍占资源
+   - 60-300 秒：低资源占用
+
+3. **PSD 文件**：
+   - 复杂的 PSD 可能处理时间较长
+   - 大型 PSD 建议增加容器内存限制
+
+4. **AI 文件**：
+   - 需要包含 PDF 兼容层
+   - 在 Illustrator 保存时启用 "Create PDF Compatible File"
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 📄 许可证
 
 MIT License
 

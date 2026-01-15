@@ -78,28 +78,27 @@ public class FileWatcherService
             var outputDir = Path.Combine(_outputDirectory, relativePath);
             Directory.CreateDirectory(outputDir);
 
-            var outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(fileInfo.Name));
             System.Console.WriteLine($"正在处理: {filePath}");
 
             switch (fileInfo.Extension.ToLower())
             {
                 case ".pdf":
-                    PdfImageExtractor.ExtractImagesFromPdf(filePath, outputPath);
+                    PdfImageExtractor.ExtractImagesFromPdf(filePath, outputDir);
                     break;
                 case ".docx":
                 case ".doc":
-                    ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputPath, "word");
+                    ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDir, "word");
                     break;
                 case ".xlsx":
                 case ".xls":
-                    ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputPath, "xl");
+                    ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDir, "xl");
                     break;
                 case ".pptx":
                 case ".ppt":
-                    ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputPath, "ppt");
+                    ExcelImageExtractor.ExtractImagesFromExcel(filePath, outputDir, "ppt");
                     break;
                 case ".zip":
-                    ArchiveImageExtractor.ExtractImagesFromArchive(filePath, outputPath);
+                    ArchiveImageExtractor.ExtractImagesFromArchive(filePath, outputDir);
                     break;
             }
 
